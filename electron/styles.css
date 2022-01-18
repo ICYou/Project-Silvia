@@ -2,5 +2,10 @@
 div {
     display: inline;
 }
+.btn.btn-round{
+    height: 75px;
+    width: 75px;
+    border-radius: 50%;
+}
 
 /* Add styles here to customize the appearance of your app */

@@ -49,15 +49,15 @@
         <div class="col-4">
             <div class="card">
             <div class="card-body">
-              <input class="btn btn-success" id="start" type="submit" name="stop" value="start"/>
-              <input class="btn btn-warning" id="stop" type="submit" name="stop" value="stop"/>
-              <input class="btn btn-secondary" id="reset" type="submit" name="reset" value="reset"/>
+              <input class="btn btn-success btn-round" id="start" type="submit" name="stop" value="start"/>
+              <input class="btn btn-warning btn-round" id="stop" type="submit" name="stop" value="stop"/>
+              <input class="btn btn-secondary btn-round" id="reset" type="submit" name="reset" value="reset"/>
             </div>
         </div>
         <div class="card">
             <div class="card-body">
               <div>
-                <input class="btn btn-primary" id="tare" type="submit" name="tare-button" value="tare"/>
+                <input class="btn btn-primary btn-round" id="tare" type="submit" name="tare-button" value="tare"/>
             </div>
             </div>
         </div>
@@ -97,7 +97,8 @@
 
         //initialize serialport with 9600 baudrate.
         // var sp = new serialPort('/dev/tty.usbmodem142301', {
-        var sp = new serialPort('/dev/tty.usbmodem101457901', {
+        // var sp = new serialPort('/dev/tty.usbmodem101457901', { // MBP
+        var sp = new serialPort('/dev/ttyACM0', { //pi
             baudRate: 115200,
         },function (err) {
   if (err) {

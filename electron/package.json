@@ -25,6 +25,7 @@
     "jquery": "^3.6.0",
     "node-gyp": "^8.4.1",
     "popper.js": "^1.14.4",
-    "serialport": "^10.0.0"
+    "serialport": "^10.4.0",
+    "tableify": "^1.1.1"
   }
 }

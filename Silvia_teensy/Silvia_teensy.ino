@@ -2,9 +2,16 @@
 #include <Wire.h>
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
-#include <Adafruit_MAX31865.h>
+   
+
+//#include <Adafruit_MAX31865.h>
 //#include <Bugtton.h>
 
+//#####################TSIC 306 temp sensor##########################
+#include "TSIC.h"
+
+TSIC tempSensor(37); 
+float boilerTemp = 0;
 
 
 //#####################HX711 Weight##########################
@@ -56,15 +63,17 @@ bool timerPaused = false;
 // Use software SPI: CS, DI, DO, CLK
 //Adafruit_MAX31865 thermo = Adafruit_MAX31865(33, 34, 35, 36);
 // use hardware SPI, just pass in the CS pin
-Adafruit_MAX31865 thermo = Adafruit_MAX31865(10);
+//Adafruit_MAX31865 thermo = Adafruit_MAX31865(10);
 
 // The value of the Rref resistor. Use 430.0 for PT100 and 4300.0 for PT1000
-#define RREF      430.0
+//#define RREF      430.0
+
 // The 'nominal' 0-degrees-C resistance of the sensor
 // 100.0 for PT100, 1000.0 for PT1000
-#define RNOMINAL  100.0
+//#define RNOMINAL  100.0
+//#define RNOMINAL  103.7
 
-float boilerTemp = 0;
+//float boilerTemp = 0;
 //#####################TEMPERATURE END##########################
 
 
@@ -80,6 +89,8 @@ void setup() {
   Serial.begin(115200); delay(10);
   Serial.println();
   Serial.println("Starting...");
+
+    pinMode(4, OUTPUT); 
 
   float calibValL; // calibration value load cell 1
   float calibValR; // calibration value load cell 2
@@ -127,7 +138,7 @@ void setup() {
   oled.set2X();
 
   //set Max31865 pt100 temp sensor
-  thermo.begin(MAX31865_2WIRE); 
+//  thermo.begin(MAX31865_2WIRE); 
 
 
   startTime = 0;
@@ -148,11 +159,21 @@ void loop() {
   
 
   if (loopTime > t + interval50) {
-    readTemp();
+    readTemperature();
     sendSerialData();
     t = millis();
   }
 }
+
+void readTemperature(){
+  uint16_t temperature = 0;
+  boilerTemp = 0;
+  if (tempSensor.getTemperature(&temperature)) {
+    boilerTemp = tempSensor.calc_Celsius(&temperature);
+  }
+}
+
+
 
 void sendSerialData(){
 //  if (millis() > t + interval50) {
@@ -176,7 +197,6 @@ void checkForSerialCommands(){
     }
   }
 }
-
 
 void startStopTimer(){
   if(!timerStart){
@@ -218,57 +238,96 @@ void updateScale(){
     newDataReady = true;
   }
   //get smoothed value from data set
-    if (loopTime > t + interval50) {
-      float a = scaleL.getData();
-      float b = scaleR.getData();
-//      Serial.println("does it crash here?");
-      if(a+b >= -0.3 && a+b <= 0.2){
-        totalWeight = 0.0;
-      }else{
-        totalWeight = a+b;
-      }
-//      Serial.println("execute all this");
-      newDataReady = 0;
-      updateOled(a, b);
+  if (newDataReady) {
+    float a = scaleL.getData();
+    float b = scaleR.getData();
+
+    calculateWeight(a,b);
+    
+    newDataReady = 0;
+    updateOled(a, b);
 
 //      t = millis();
     
   }
 }
 
+const int weightLen = 20;
+float weightVals[weightLen];
+int weightIndex = 0;
+
+void calculateWeight(float a, float b){
+
+  
+//  if (weightindex >= weighLen)
+//    weightIndex = 0;
+//
+//  float currentWeight = a+b;
+//  float weightAverage = average(weightVals, weightLen); //get average before new value is added
+//  
+//  weightVals[weightIndex] = currentWeight;
+//
+//  if(currentWeight - weightAverage > 0.25)
+//    clearList(weightVals, weightLen);
+
+  
+  if(a+b >= -0.3 && a+b <= 0.2){
+    totalWeight = 0.0;
+  }else{
+    totalWeight = a+b;
+  }
+
+//  weightIndex++;
+}
+
+float average (float * array, int len)  // assuming array is int.
+{
+  float sum = 0.0;  // sum will be larger than an item, long for safety.
+  for (int i = 0 ; i < len ; i++)
+    sum += array [i] ;
+  return  ((float) sum) / len ;  // average will be fractional, so float may be appropriate.
+}
+
+float clearList (float * array, int len)  // assuming array is int.
+{
+  for (int i = 0 ; i < len ; i++)
+    array [i] = 0;
+}
+
+
 bool isTaring(){
   return (scaleL.getTareStatus() == true || scaleR.getTareStatus() == true);
 }
 
 
-void readTemp(){
-  thermo.readRTD();
-  boilerTemp = thermo.temperature(RNOMINAL, RREF);
-
-    uint8_t fault = thermo.readFault();
-  if (fault) {
-    Serial.print("Fault 0x"); Serial.println(fault, HEX);
-    if (fault & MAX31865_FAULT_HIGHTHRESH) {
-      Serial.println("RTD High Threshold"); 
-    }
-    if (fault & MAX31865_FAULT_LOWTHRESH) {
-      Serial.println("RTD Low Threshold"); 
-    }
-    if (fault & MAX31865_FAULT_REFINLOW) {
-      Serial.println("REFIN- > 0.85 x Bias"); 
-    }
-    if (fault & MAX31865_FAULT_REFINHIGH) {
-      Serial.println("REFIN- < 0.85 x Bias - FORCE- open"); 
-    }
-    if (fault & MAX31865_FAULT_RTDINLOW) {
-      Serial.println("RTDIN- < 0.85 x Bias - FORCE- open"); 
-    }
-    if (fault & MAX31865_FAULT_OVUV) {
-      Serial.println("Under/Over voltage"); 
-    }
-    thermo.clearFault();
-  }
-}
+//void readTemp(){
+//  thermo.readRTD();
+//  boilerTemp = thermo.temperature(RNOMINAL, RREF);
+//
+//    uint8_t fault = thermo.readFault();
+//  if (fault) {
+//    Serial.print("Fault 0x"); Serial.println(fault, HEX);
+//    if (fault & MAX31865_FAULT_HIGHTHRESH) {
+//      Serial.println("RTD High Threshold"); 
+//    }
+//    if (fault & MAX31865_FAULT_LOWTHRESH) {
+//      Serial.println("RTD Low Threshold"); 
+//    }
+//    if (fault & MAX31865_FAULT_REFINLOW) {
+//      Serial.println("REFIN- > 0.85 x Bias"); 
+//    }
+//    if (fault & MAX31865_FAULT_REFINHIGH) {
+//      Serial.println("REFIN- < 0.85 x Bias - FORCE- open"); 
+//    }
+//    if (fault & MAX31865_FAULT_RTDINLOW) {
+//      Serial.println("RTDIN- < 0.85 x Bias - FORCE- open"); 
+//    }
+//    if (fault & MAX31865_FAULT_OVUV) {
+//      Serial.println("Under/Over voltage"); 
+//    }
+//    thermo.clearFault();
+//  }
+//}
 
 
 bool longpressFlag = 0;
@@ -277,7 +336,7 @@ void handleButtons(){
   int btn1State = digitalRead(btn1);
   int btn2State = digitalRead(btn2);
   if (btn1State == HIGH) {
-    Serial.println("tare scale by button");
+//    Serial.println("tare scale by button");
     scaleL.tareNoDelay();
     scaleR.tareNoDelay();
   } 
@@ -286,13 +345,13 @@ void handleButtons(){
     if(btn2Time == 0){ //save initial press time
       btn2Time = millis();
     }else if((millis() - btn2Time) > 1200){ //handle 1.2s press
-      Serial.println("button longpress");
+//      Serial.println("button longpress");
       stopTimer();
       resetTimer();
     }
   }else{ //buttonState is low
     if(btn2Time > 0 && millis() - btn2Time <= 1200){ //handle button released after long press - Reset button
-      Serial.println("button released");
+//      Serial.println("button released");
       startStopTimer();
       }
       btn2Time = 0;

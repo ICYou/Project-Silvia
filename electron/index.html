@@ -74,13 +74,20 @@
     </div>
 
         <div class="col-6 collapse" id="serialOutput">
-            <div class="card card-body"></div>
-            <h1>Serial terminal</h1>
-            <textarea rows="30" cols="50" id="incomingData"></textarea>
-            </br>
-            <textarea rows="1" cols="50" id="inputText"></textarea>
-            </br>
-            <input class="btn btn-primary" id="button" type="submit" name="button" value="Ctrl+c"/>
+            <div class="col-12">
+                <div>Error and ports:</div>
+                <div id="error"></div>
+                <div id="ports"></div>
+            </div>
+            <div class="col-12">
+                <div class="card card-body"></div>
+                <h1>Serial terminal</h1>
+                <textarea rows="30" cols="50" id="incomingData"></textarea>
+                </br>
+                <textarea rows="1" cols="50" id="inputText"></textarea>
+                </br>
+                <input class="btn btn-primary" id="button" type="submit" name="button" value="Ctrl+c"/>
+            </div>
         </div>
         </div>
     </div>
@@ -100,15 +107,29 @@
         // var sp = new serialPort('/dev/tty.usbmodem101457901', { // MBP
         var sp = new serialPort('/dev/ttyACM0', { //pi
             baudRate: 115200,
+            autoOpen: true,
         },function (err) {
-  if (err) {
-    return console.log('Error: ', err.message)
-  }
-});
+            if (err) {
+                return console.log('Error: ', err.message)
+            }
+        });
+
+        if (!sp.isOpen){
+            console.log('serial port is closed, attempting to reopen');
+            sp.open(function (err) {
+            if (err) {
+              return console.log('Error opening port: ', err.message)
+            }
+        })
+        }
         
         //parse incoming data line-by-line from serial port.
         const parser = sp.pipe(new Readline({ delimiter: '\r\n' }));
         parser.on('data', addText);
+
+        port.on('error', function(err) {
+            console.log('Error: ', err.message)
+        })
 
         //append incoming data to the textarea.
         function addText(event) {
@@ -167,6 +188,7 @@
             //send ctrl+c to serialport
             writeonSer('r');
         }
+        
     </script>
     <script>
         // You can also require other files to run in this process

@@ -6,6 +6,9 @@
   "scripts": {
     "start": "electron ."
   },
+  "build": {
+    "buildDependenciesFromSource": true
+  },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": [
     "Electron",
@@ -17,7 +20,7 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^13.0.0",
+    "electron": "^13.3.0",
     "electron-rebuild": "^3.2.6"
   },
   "dependencies": {

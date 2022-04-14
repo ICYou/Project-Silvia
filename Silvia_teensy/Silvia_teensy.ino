@@ -11,7 +11,9 @@
 #include "TSIC.h"
 
 TSIC tempSensor(37); 
+TSIC tempSensor2(38); 
 float boilerTemp = 0;
+float boilerTemp2 = 0;
 
 
 //#####################HX711 Weight##########################
@@ -37,8 +39,13 @@ float totalWeight = 0;
 
 
 
-//Define Oled
-#define I2C_ADDRESS 0x3C// 0X3C+SA0 - 0x3C or 0x3D
+//##################### Oled ##########################
+//Small oled 128x64
+#define I2C_ADDRESS 0x3C// 0X3C+SA0 - 0x3C or 0x3D 
+
+//Large oled 128x128
+//#define I2C_ADDRESS 0x78// 0X3C+SA0 - 0x3C or 0x3D 
+
 // Define proper RST_PIN if required.
 #define RST_PIN -1
 SSD1306AsciiWire oled;
@@ -79,9 +86,14 @@ bool timerPaused = false;
 
 
 //#####################Other stuff##########################
-const int interval50 = 50; //increase value to slow down serial print activity
+const int interval50 = 200; //increase value to slow down serial print activity
 unsigned long t = 0;
 unsigned long loopTime = 0;
+
+//#####################SSR Pins##########################
+#define pumpSSR 30
+#define solenoidSSR 31
+#define boilerSSR 32
 
 
 
@@ -89,8 +101,11 @@ void setup() {
   Serial.begin(115200); delay(10);
   Serial.println();
   Serial.println("Starting...");
-
-    pinMode(4, OUTPUT); 
+  
+  pinMode(4, OUTPUT); 
+  pinMode(30, OUTPUT);
+  pinMode(31, OUTPUT);
+  pinMode(32, OUTPUT);
 
   float calibValL; // calibration value load cell 1
   float calibValR; // calibration value load cell 2
@@ -167,9 +182,14 @@ void loop() {
 
 void readTemperature(){
   uint16_t temperature = 0;
+  uint16_t temperature2 = 0;
   boilerTemp = 0;
+  boilerTemp2 = 0;
   if (tempSensor.getTemperature(&temperature)) {
     boilerTemp = tempSensor.calc_Celsius(&temperature);
+  }
+  if (tempSensor2.getTemperature(&temperature2)) {
+    boilerTemp2 = tempSensor2.calc_Celsius(&temperature2);
   }
 }
 
@@ -177,7 +197,7 @@ void readTemperature(){
 
 void sendSerialData(){
 //  if (millis() > t + interval50) {
-    Serial.println("{\"g\":" + String(totalWeight,1) +", \"s\":" + String((shotTime/1000.0), 1)  + ", \"t\":" + String((boilerTemp), 1)  +"}");
+    Serial.println("{\"g\":" + String(totalWeight,1) +", \"s\":" + String((shotTime/1000.0), 1)  + ", \"t\":" + String((boilerTemp), 1) + ", \"t2\":" + String((boilerTemp2), 1)  +"}");
 //  }
 }
  

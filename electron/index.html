@@ -105,7 +105,7 @@
 
         //initialize serialport with 9600 baudrate.
         // var sp = new serialPort('/dev/tty.usbmodem142301', {
-        var sp = new serialPort({path: '/dev/tty.usbmodem101457901', // MBP
+        var sp = new SerialPort({path: '/dev/tty.usbmodem101457901', // MBP
         // var sp = new serialPort('/dev/ttyACM0', { //pi
             baudRate: 115200,
             autoOpen: true,
@@ -129,7 +129,7 @@
         const parser = sp.pipe(new ReadlineParser({ delimiter: '\r\n' }));
         parser.on('data', addText);
 
-        port.on('error', function(err) {
+        sp.on('error', function(err) {
             console.log('Error: ', err.message)
         })
 

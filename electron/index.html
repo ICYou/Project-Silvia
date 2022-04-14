@@ -104,9 +104,9 @@
         const { ReadlineParser } = require('@serialport/parser-readline')
 
         //initialize serialport with 9600 baudrate.
-        // var sp = new serialPort('/dev/tty.usbmodem142301', {
+        // var sp = new SerialPort('/dev/tty.usbmodem142301', {
         // var sp = new SerialPort({path: '/dev/tty.usbmodem101457901', // MBP
-        var sp = new serialPort('/dev/ttyACM0', { //pi
+        var sp = new SerialPort('/dev/ttyACM0', { //pi
             baudRate: 115200,
             autoOpen: true,
         },function (err) {

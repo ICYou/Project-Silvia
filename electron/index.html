@@ -176,19 +176,19 @@
         }
         document.getElementById('tare').onclick = function(e){
             //send ctrl+c to serialport
-            writeonSer('t');
+            writeonSer('<s:t>');
         }
         document.getElementById('start').onclick = function(e){
             //send ctrl+c to serialport
-            writeonSer('s');
+            writeonSer('<t:s>');
         }
         document.getElementById('stop').onclick = function(e){
             //send ctrl+c to serialport
-            writeonSer('p');
+            writeonSer('<t:p>');
         }
         document.getElementById('reset').onclick = function(e){
             //send ctrl+c to serialport
-            writeonSer('r');
+            writeonSer('<t:r>');
         }
         
     </script>

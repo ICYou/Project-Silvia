@@ -10,9 +10,10 @@
 //#####################TSIC 306 temp sensor##########################
 #include "TSIC.h"
 
-TSIC tempSensor(37); 
+TSIC tempSensor1(37); 
 TSIC tempSensor2(38); 
 float boilerTemp = 0;
+float boilerTemp1 = 0;
 float boilerTemp2 = 0;
 
 
@@ -87,13 +88,22 @@ bool timerPaused = false;
 
 //#####################Other stuff##########################
 const int interval50 = 200; //increase value to slow down serial print activity
-unsigned long t = 0;
+unsigned long tSensors = 0;
+unsigned long tSerial = 0;
 unsigned long loopTime = 0;
 
-//#####################SSR Pins##########################
+//#####################SSR Pins########################## 
 #define pumpSSR 30
 #define solenoidSSR 31
 #define boilerSSR 32
+
+
+//#####################brew variables########################## 
+bool brewing = false;
+char brewMode;
+int brewTarget;
+unsigned long brewStartTime = 0;
+unsigned long brewCountDown = 0;
 
 
 
@@ -103,9 +113,9 @@ void setup() {
   Serial.println("Starting...");
   
   pinMode(4, OUTPUT); 
-  pinMode(30, OUTPUT);
-  pinMode(31, OUTPUT);
-  pinMode(32, OUTPUT);
+  pinMode(pumpSSR, OUTPUT);
+  pinMode(solenoidSSR, OUTPUT);
+  pinMode(boilerSSR, OUTPUT);
 
   float calibValL; // calibration value load cell 1
   float calibValR; // calibration value load cell 2
@@ -167,41 +177,67 @@ void loop() {
 //  buttons.update();
 
   updateScale(); // this is also where oled is updated
-  checkForSerialCommands();  
+//  checkForSerialCommands();  
+  readFromSerial();
 //  handleRotary();
   handleButtons();
   updateTimer();
+  checkForBrewing();
   
 
-  if (loopTime > t + interval50) {
+  if (loopTime > tSensors + 100) {
     readTemperature();
+    tSensors = millis();
+  }
+  if (loopTime > tSerial + 500) {
     sendSerialData();
-    t = millis();
+    tSerial = millis();
   }
 }
 
 void readTemperature(){
-  uint16_t temperature = 0;
+  uint16_t temperature1 = 0;
   uint16_t temperature2 = 0;
   boilerTemp = 0;
+  boilerTemp1 = 0;
   boilerTemp2 = 0;
-  if (tempSensor.getTemperature(&temperature)) {
-    boilerTemp = tempSensor.calc_Celsius(&temperature);
+  
+  if (tempSensor1.getTemperature(&temperature1)) {
+    boilerTemp1 = tempSensor1.calc_Celsius(&temperature1);
   }
   if (tempSensor2.getTemperature(&temperature2)) {
     boilerTemp2 = tempSensor2.calc_Celsius(&temperature2);
+  }
+  bool temp1Read = boilerTemp1 > 0 && boilerTemp1 < 250;
+  bool temp2Read = boilerTemp2 > 0 && boilerTemp2 < 250;
+  
+  if (temp1Read && temp2Read){
+    boilerTemp = (boilerTemp1 + boilerTemp2) / 2;
+  }
+  else{
+    if (!temp1Read && temp2Read){
+      boilerTemp = boilerTemp2;
+    }
+    else if (temp1Read && !temp2Read){
+      boilerTemp = boilerTemp1;
+    }
   }
 }
 
 
 
 void sendSerialData(){
-//  if (millis() > t + interval50) {
-    Serial.println("{\"g\":" + String(totalWeight,1) +", \"s\":" + String((shotTime/1000.0), 1)  + ", \"t\":" + String((boilerTemp), 1) + ", \"t2\":" + String((boilerTemp2), 1)  +"}");
-//  }
+    Serial.println(
+            "{\"g\":" + String(totalWeight,1) +
+            ", \"s\":" + String((shotTime/1000.0), 1)  + 
+            ", \"t\":" + String((boilerTemp), 1) + 
+            ", \"t1\":" + String((boilerTemp1), 1) + 
+            ", \"t2\":" + String((boilerTemp2), 1)  +
+            ", \"brewCD\":" + String((brewCountDown/1000.0), 1)  +
+            "}");
 }
  
-
+// FUNCTION WILL BE DEPRECATED
 void checkForSerialCommands(){
   // receive command from serial terminal, send 't' to initiate tare operation:
   if (Serial.available() > 0) {
@@ -215,6 +251,144 @@ void checkForSerialCommands(){
     }else if(inByte == 'r'){
       resetTimer();
     }
+  }
+}
+
+//READ FROM SERIAL
+const byte numChars = 32;
+char receivedChars[numChars];
+char tempChars[numChars];        // temporary array for use when parsing
+
+
+boolean newSerialData = false;
+
+void readFromSerial(){
+  recvWithStartEndMarkers();
+  if (newSerialData == true) {
+    strcpy(tempChars, receivedChars);
+    parseData();
+    newSerialData = false;
+  }
+}
+
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+
+    while (Serial.available() > 0 && newSerialData == false) {
+        rc = Serial.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newSerialData = true;
+            }
+        }
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
+void parseData() {      // split the data into its parts
+  Serial.println(receivedChars);
+  Serial.println(receivedChars);
+  Serial.println(receivedChars);
+  Serial.println(receivedChars);
+  Serial.println(receivedChars);
+
+  char * strtokIndx; // this is used by strtok() as an index
+
+  char operation[numChars] = {0};
+  char attribute[numChars] = {0};
+  
+  
+  strtokIndx = strtok(tempChars,":");      // get the first part - the string
+  strcpy(operation, strtokIndx); // copy it to messageFromPC
+  Serial.println(operation);
+  Serial.println(operation);
+//  Serial.println(typeid(operation).name());
+  
+
+  
+  strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
+//  integerFromPC = atoi(strtokIndx);     // convert this part to an integer
+  strcpy(attribute, strtokIndx);
+  Serial.println(attribute);
+  Serial.println(attribute);
+  Serial.println(attribute);
+  
+  if (strcmp(operation, "s") == 0) {//scale
+    if(strcmp(attribute, "t") == 0){
+      Serial.println("execute tare");
+      tareScale("serial");
+    }
+  }else if(strcmp(operation, "t") == 0){//timer
+    if(strcmp(attribute, "s") == 0){
+      Serial.println("start timer");
+      startTimer();
+    }else if(strcmp(attribute, "p") == 0){
+      Serial.println("stop timer");
+      stopTimer();
+    }else if(strcmp(attribute,"r") == 0){
+      Serial.println("reset timer");
+      resetTimer();
+    }
+  }else if(strcmp(operation, "bt") == 0){//brew
+    Serial.print("brew for: ");
+    Serial.println(attribute);
+    int brewFor = atoi(attribute);
+    Serial.println(brewFor);
+    brewByTime(atoi(attribute));
+  }
+}
+
+
+void brewByTime(int seconds){
+  brewing = true;
+  brewMode = 't';
+  brewTarget = seconds;
+  brewStartTime = millis();
+}
+
+void brewByWeight(int grams){ // not fully implemented
+  brewing = true;
+  brewMode = 'w';
+  brewTarget = grams;
+}
+
+
+void checkForBrewing(){
+  if(brewing){
+    if(brewMode == 't'){ //brew by time
+      if(loopTime < brewStartTime + brewTarget*1000){
+        digitalWrite(pumpSSR, HIGH);
+        digitalWrite(solenoidSSR, HIGH);
+        brewCountDown = brewStartTime + brewTarget*1000 - loopTime;
+      }else{
+        digitalWrite(pumpSSR, LOW);
+        digitalWrite(solenoidSSR, LOW);
+        brewing = false;
+        brewCountDown = 0;
+      }
+    }else if(brewMode == 'w'){ //brew by weight
+      
+    }
+  }else{
+    digitalWrite(pumpSSR, LOW);
+    digitalWrite(solenoidSSR, LOW);
   }
 }
 
@@ -249,11 +423,7 @@ void updateTimer(){
 
 void updateScale(){
   static boolean newDataReady = 0;
-  // check for new data/start next conversion:
-//  Serial.println("newDataREADY L: " + String(scaleL.update()) );
-//  Serial.println("newDataREADY R: " + String(scaleR.update()) );
-//  Serial.println("calibval L: "+ String(scaleL.getCalFactor()));
-//  Serial.println("calibval R: "+ String(scaleR.getCalFactor())); 
+  
   if (scaleL.update() || scaleR.update()){
     newDataReady = true;
   }
@@ -278,26 +448,11 @@ int weightIndex = 0;
 
 void calculateWeight(float a, float b){
 
-  
-//  if (weightindex >= weighLen)
-//    weightIndex = 0;
-//
-//  float currentWeight = a+b;
-//  float weightAverage = average(weightVals, weightLen); //get average before new value is added
-//  
-//  weightVals[weightIndex] = currentWeight;
-//
-//  if(currentWeight - weightAverage > 0.25)
-//    clearList(weightVals, weightLen);
-
-  
   if(a+b >= -0.3 && a+b <= 0.2){
     totalWeight = 0.0;
   }else{
     totalWeight = a+b;
   }
-
-//  weightIndex++;
 }
 
 float average (float * array, int len)  // assuming array is int.
@@ -319,35 +474,6 @@ bool isTaring(){
   return (scaleL.getTareStatus() == true || scaleR.getTareStatus() == true);
 }
 
-
-//void readTemp(){
-//  thermo.readRTD();
-//  boilerTemp = thermo.temperature(RNOMINAL, RREF);
-//
-//    uint8_t fault = thermo.readFault();
-//  if (fault) {
-//    Serial.print("Fault 0x"); Serial.println(fault, HEX);
-//    if (fault & MAX31865_FAULT_HIGHTHRESH) {
-//      Serial.println("RTD High Threshold"); 
-//    }
-//    if (fault & MAX31865_FAULT_LOWTHRESH) {
-//      Serial.println("RTD Low Threshold"); 
-//    }
-//    if (fault & MAX31865_FAULT_REFINLOW) {
-//      Serial.println("REFIN- > 0.85 x Bias"); 
-//    }
-//    if (fault & MAX31865_FAULT_REFINHIGH) {
-//      Serial.println("REFIN- < 0.85 x Bias - FORCE- open"); 
-//    }
-//    if (fault & MAX31865_FAULT_RTDINLOW) {
-//      Serial.println("RTDIN- < 0.85 x Bias - FORCE- open"); 
-//    }
-//    if (fault & MAX31865_FAULT_OVUV) {
-//      Serial.println("Under/Over voltage"); 
-//    }
-//    thermo.clearFault();
-//  }
-//}
 
 
 bool longpressFlag = 0;

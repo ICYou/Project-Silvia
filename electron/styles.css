@@ -8,4 +8,14 @@ div {
     border-radius: 50%;
 }
 
+.btn.btn-small{
+    height: 50px !important;
+
+    width: 50px !important;
+}
+
+h4 {
+    display: inline;
+}
+
 /* Add styles here to customize the appearance of your app */

@@ -55,7 +55,7 @@ function processSerialData(event) {
         console.log(data);
         document.getElementById("grams").innerHTML = data.g + "gram";
         document.getElementById("seconds").innerHTML = data.s + "s";
-        document.getElementById("temp").innerHTML = data.t + "\u00B0C";
+        document.getElementById("temp").innerHTML = data.t + "\u00B0C | sp: " + data.PIDsp + "\u00B0C";
     }else{
         document.getElementById("incomingData").value += "\n"+event;
     }
@@ -119,6 +119,27 @@ document.getElementById('brew29').onclick = function(e){
 }
 document.getElementById('brew30').onclick = function(e){
   writeonSer('<bt:30>');
+}
+document.getElementById('brewStop').onclick = function(e){
+  writeonSer('<bstop:0>');
+}
+document.getElementById('sp20').onclick = function(e){
+  writeonSer('<PIDcSP:20>');
+}
+document.getElementById('sp85').onclick = function(e){
+  writeonSer('<PIDcSP:85>');
+}
+document.getElementById('sp90').onclick = function(e){
+  writeonSer('<PIDcSP:90>');
+}
+document.getElementById('sp95').onclick = function(e){
+  writeonSer('<PIDcSP:95>');
+}
+document.getElementById('sp110').onclick = function(e){
+  writeonSer('<PIDcSP:110>');
+}
+document.getElementById('sp120').onclick = function(e){
+  writeonSer('<PIDcSP:120>');
 }
 
 

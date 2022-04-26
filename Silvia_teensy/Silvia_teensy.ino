@@ -231,7 +231,7 @@ void loop() {
     readTemperature();
     tSensors = millis();
   }
-  if (loopTime > tSerial + 500) {
+  if (loopTime > tSerial + 50) {
     sendSerialData();
     tSerial = millis();
   }
@@ -413,11 +413,16 @@ void parseData() {      // split the data into its parts
     int brewFor = atoi(attribute);
     brewByTime(brewFor);  
   }
-  else if(strcmp(operation, "b2") == 0){//brew by weight
+  else if(strcmp(operation, "bw") == 0){//brew by weight
     Serial.print("brew target weight: ");
     Serial.println(attribute);
     int weight = atoi(attribute);
     brewByWeight(weight);  
+  }
+  else if(strcmp(operation, "bstop") == 0){//brew stop
+    Serial.print("stop brewing now!");
+    Serial.println(attribute);
+    stopBrew();  
   }
   else if(strcmp(operation, "PIDcSP") == 0){//change PID SetPoint
     PIDsetpoint = atof(attribute);
@@ -454,6 +459,10 @@ void parseData() {      // split the data into its parts
   }
 }
 
+
+void stopBrew(){
+  brewing = false;
+}
 
 void brewByTime(int seconds){
   brewing = true;

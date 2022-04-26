@@ -10,10 +10,12 @@ div {
 
 .btn.btn-small{
     height: 50px !important;
-
     width: 50px !important;
 }
-
+.btn.btn-medium{
+    height: 60px !important;
+    width: 60px !important;
+}
 h4 {
     display: inline;
 }

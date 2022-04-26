@@ -56,6 +56,7 @@ function processSerialData(event) {
         document.getElementById("grams").innerHTML = data.g + "gram";
         document.getElementById("seconds").innerHTML = data.s + "s";
         document.getElementById("temp").innerHTML = data.t + "\u00B0C | sp: " + data.PIDsp + "\u00B0C";
+        document.getElementById("setpoint").innerHTML = data.PIDsp + "\u00B0C";
     }else{
         document.getElementById("incomingData").value += "\n"+event;
     }

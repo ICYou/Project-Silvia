@@ -11,8 +11,18 @@ const { SerialPort } = require('serialport')
 // const tableify = require('tableify')
 
 
+var platform = process.platform;
+console.log(platform);
+
+var portPath 
+
+if (platform == "linux"){
+  portPath = '/dev/ttyACM0'; //PI
+}else{
+  portPath = '/dev/tty.usbmodem101457901'; //MBP
+}
 // var portPath = '/dev/tty.usbmodem101457901'; //MBP
-var portPath = '/dev/ttyACM0'; //Pi
+ //Pi
 
 //initialize serialport with 9600 baudrate.
 // var sp = new SerialPort('/dev/tty.usbmodem142301', {

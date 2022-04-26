@@ -25,26 +25,46 @@
   <body>
     <div class="container-fluid">
     <div class="row">
-        <div class="col-4">
-            <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title" id="grams"></h4>
+        <div class="col-8">
+            <div class="row">
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-body">
+                      <h4 class="card-title" id="grams"></h4>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                      <h4 class="card-title" id="seconds"></h4>
+                    </div>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title" id="seconds"></h4>
-                </div>
-            </div>
-            </div>
-
-        <div class="col-4">
-            <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title" id="temp"></h4>
+    
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-body">
+                      <h4 class="card-title" id="temp"></h4>
+                    </div>
                 </div>
             </div>
         </div>
+
+            <div class="row">
+                <div class="card">
+                    <div class="card-body">
+                        <h2>BREW</h2>
+                        <input class="btn btn-danger btn-round" id="brew10" type="submit" name="brew10" value="10s"/>
+                      <input class="btn btn-success btn-round" id="brew25" type="submit" name="brew25" value="25s"/>
+                      <input class="btn btn-warning btn-round" id="brew26" type="submit" name="brew26" value="26s"/>
+                      <input class="btn btn-secondary btn-round" id="brew27" type="submit" name="brew27" value="27s"/>
+                      <input class="btn btn-secondary btn-round" id="brew28" type="submit" name="brew28" value="28s"/>
+                      <input class="btn btn-secondary btn-round" id="brew29" type="submit" name="brew29" value="29s"/>
+                      <input class="btn btn-secondary btn-round" id="brew30" type="submit" name="brew30" value="30s"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         
         <div class="col-4">
             <div class="card">
@@ -64,7 +84,7 @@
 
         </div>
         <div class="col-4">
-            <textarea rows="1" cols="20" id="serialJSON"></textarea>
+            <textarea rows="1" cols="150" id="serialJSON"></textarea>
 
             <br>
 
@@ -82,7 +102,7 @@
             <div class="col-12">
                 <div class="card card-body"></div>
                 <h1>Serial terminal</h1>
-                <textarea rows="30" cols="50" id="incomingData"></textarea>
+                <textarea rows="30" cols="30" id="incomingData"></textarea>
                 </br>
                 <textarea rows="1" cols="50" id="inputText"></textarea>
                 </br>
@@ -98,99 +118,6 @@
 
     <script>
 
-        //load serialport module
-        const { SerialPort } = require('serialport')
-        // const Readline = serialPort.parsers.Readline;
-        const { ReadlineParser } = require('@serialport/parser-readline')
-
-        //initialize serialport with 9600 baudrate.
-        // var sp = new SerialPort('/dev/tty.usbmodem142301', {
-        // var sp = new SerialPort({path: '/dev/tty.usbmodem101457901', // MBP
-        var sp = new SerialPort({path: '/dev/ttyACM0', //pi
-            baudRate: 115200,
-            autoOpen: true,
-        },function (err) {
-            if (err) {
-                return console.log('Error: ', err.message)
-            }
-        });
-
-        if (!sp.isOpen){
-            console.log('serial port is closed, attempting to reopen');
-            sp.open(function (err) {
-            if (err) {
-              return console.log('Error opening port: ', err.message)
-            }
-        })
-        }
-        
-        //parse incoming data line-by-line from serial port.
-        // const parser = sp.pipe(new Readline({ delimiter: '\r\n' }));
-        const parser = sp.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-        parser.on('data', addText);
-
-        sp.on('error', function(err) {
-            console.log('Error: ', err.message)
-        })
-
-        //append incoming data to the textarea.
-        function addText(event) {
-            if (event.startsWith("{")){
-                document.getElementById("serialJSON").value = event;
-                const data = JSON.parse(event);
-                console.log(data);
-                document.getElementById("grams").innerHTML = data.g + "gram";
-                document.getElementById("seconds").innerHTML = data.s + "s";
-                document.getElementById("temp").innerHTML = data.t + "\u00B0C";
-            }else{
-                document.getElementById("incomingData").value += "\n"+event;
-            }
-        }
-    
-        function writeonSer(data){
-            //Write the data to serial port.
-            sp.write( data, function(err) {
-                if (err) {
-                    return console.log('Error on write: ', err.message);
-                }
-                console.log('message written');
-            });
-    
-        }
-    
-        document.getElementById('inputText').onkeypress = function(e){
-            if (!e) e = window.event;
-            var keyCode = e.keyCode || e.which;
-            //write the data to serial when enter key is pressed.
-            if (keyCode == '13'){
-                //console.log("enter pressed", document.getElementById("inputText").value);
-                writeonSer(document.getElementById("inputText").value+"\r\n");
-                document.getElementById('inputText').value = "";
-                return false;
-            }
-        }
-    
-        document.getElementById('button').onclick = function(e){
-            //send ctrl+c to serialport
-            writeonSer('\x03');
-        }
-        document.getElementById('tare').onclick = function(e){
-            //send ctrl+c to serialport
-            writeonSer('<s:t>');
-        }
-        document.getElementById('start').onclick = function(e){
-            //send ctrl+c to serialport
-            writeonSer('<t:s>');
-        }
-        document.getElementById('stop').onclick = function(e){
-            //send ctrl+c to serialport
-            writeonSer('<t:p>');
-        }
-        document.getElementById('reset').onclick = function(e){
-            //send ctrl+c to serialport
-            writeonSer('<t:r>');
-        }
-        
     </script>
     <script>
         // You can also require other files to run in this process

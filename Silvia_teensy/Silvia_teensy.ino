@@ -17,6 +17,37 @@ float boilerTemp1 = 0;
 float boilerTemp2 = 0;
 
 
+
+//##################### PID ##########################
+#include <PID_v1.h>
+
+//Parameters
+double PIDsetpoint = 90.0, PIDinput, PIDoutput;
+
+//Tuning parameters
+double Kp=140, Ki=1, Kd=1500;
+//double Kp=40, Ki=10, Kd=20;
+
+// Shades of Coffee Gaggia suggested values
+//Set 1: P=5.2 , I=28, D=7
+//Set 2: P=4.5, I=64, D=16
+//Set 3: P=4.8, I=80, D=20
+
+PID myPID(&PIDinput, &PIDoutput, &PIDsetpoint, Kp, Ki, Kd, DIRECT);
+
+int PIDinterval = 4000;
+unsigned long PIDintervalStart;
+
+//#####################SSR Pins########################## 
+//#define pumpSSR 30
+//#define solenoidSSR 31
+//#define boilerSSR 32
+
+#define boilerSSR 2
+#define pumpSSR 3
+#define solenoidSSR 4
+
+
 //#####################HX711 Weight##########################
 #include <HX711_ADC.h>
 #if defined(ESP8266)|| defined(ESP32) || defined(AVR)
@@ -24,10 +55,16 @@ float boilerTemp2 = 0;
 #endif
 
 //pins:
-const int HX711_dout_L = 6; //mcu > HX711 no 1 dout pin
-const int HX711_sck_L = 7; //mcu > HX711 no 1 sck pin
-const int HX711_dout_R = 8; //mcu > HX711 no 2 dout pin
-const int HX711_sck_R = 9; //mcu > HX711 no 2 sck pin
+//const int HX711_dout_L = 6; //mcu > HX711 no 1 dout pin
+//const int HX711_sck_L = 7; //mcu > HX711 no 1 sck pin
+//const int HX711_dout_R = 8; //mcu > HX711 no 2 dout pin
+//const int HX711_sck_R = 9; //mcu > HX711 no 2 sck pin
+
+const int HX711_dout_L = 8; //mcu > HX711 no 1 dout pin
+const int HX711_sck_L = 9; //mcu > HX711 no 1 sck pin
+const int HX711_dout_R = 6; //mcu > HX711 no 2 dout pin
+const int HX711_sck_R = 7; //mcu > HX711 no 2 sck pin
+
 
 //HX711 constructor (dout pin, sck pin)
 HX711_ADC scaleL(HX711_dout_L, HX711_sck_L); //HX711 1
@@ -92,10 +129,6 @@ unsigned long tSensors = 0;
 unsigned long tSerial = 0;
 unsigned long loopTime = 0;
 
-//#####################SSR Pins########################## 
-#define pumpSSR 30
-#define solenoidSSR 31
-#define boilerSSR 32
 
 
 //#####################brew variables########################## 
@@ -120,8 +153,8 @@ void setup() {
   float calibValL; // calibration value load cell 1
   float calibValR; // calibration value load cell 2
 
-  calibValL = 1705.31; // uncomment this if you want to set this value in the sketch
-  calibValR = 1779.86; // uncomment this if you want to set this value in the sketch
+  calibValR = 1705.31; // uncomment this if you want to set this value in the sketch
+  calibValL = 1779.86; // uncomment this if you want to set this value in the sketch
 #if defined(ESP8266) || defined(ESP32)
   //EEPROM.begin(512); // uncomment this if you use ESP8266 and want to fetch the value from eeprom
 #endif
@@ -168,6 +201,15 @@ void setup() {
 
   startTime = 0;
   shotTime = 0;
+
+
+  //#### SETUP PID ####
+  PIDintervalStart = millis();
+  //tell the PID to range between 0 and the full window size
+  myPID.SetOutputLimits(0, PIDinterval);
+  //turn the PID on
+  myPID.SetMode(AUTOMATIC);
+
   
   Serial.println("Startup is complete");
 }
@@ -193,14 +235,38 @@ void loop() {
     sendSerialData();
     tSerial = millis();
   }
+
+  //### PID
+  handlePID();
+  
+}
+
+void handlePID(){
+  PIDinput = boilerTemp;
+  myPID.Compute();
+
+  if (PIDoutput < 50){
+    if (PIDoutput > 25) PIDoutput = 50;
+    else PIDoutput = 0;
+  }
+  
+  if (millis() - PIDintervalStart > PIDinterval)
+  { //time to shift the Relay Window
+    PIDintervalStart = millis();
+  }
+  if (PIDoutput > millis() - PIDintervalStart){ 
+    digitalWrite(boilerSSR, HIGH);
+  }
+  else {
+    digitalWrite(boilerSSR, LOW);
+  }
 }
 
 void readTemperature(){
   uint16_t temperature1 = 0;
   uint16_t temperature2 = 0;
-  boilerTemp = 0;
-  boilerTemp1 = 0;
-  boilerTemp2 = 0;
+//  boilerTemp1;
+//  boilerTemp2;
   
   if (tempSensor1.getTemperature(&temperature1)) {
     boilerTemp1 = tempSensor1.calc_Celsius(&temperature1);
@@ -212,16 +278,19 @@ void readTemperature(){
   bool temp2Read = boilerTemp2 > 0 && boilerTemp2 < 250;
   
   if (temp1Read && temp2Read){
-    boilerTemp = (boilerTemp1 + boilerTemp2) / 2;
-  }
-  else{
-    if (!temp1Read && temp2Read){
-      boilerTemp = boilerTemp2;
-    }
-    else if (temp1Read && !temp2Read){
+    if (boilerTemp1 > boilerTemp2)
       boilerTemp = boilerTemp1;
-    }
+    else
+      boilerTemp = boilerTemp2;
   }
+//  else{
+//    if (!temp1Read && temp2Read){
+//      boilerTemp = boilerTemp2;
+//    }
+//    else if (temp1Read && !temp2Read){
+//      boilerTemp = boilerTemp1;
+//    }
+//  }
 }
 
 
@@ -233,7 +302,10 @@ void sendSerialData(){
             ", \"t\":" + String((boilerTemp), 1) + 
             ", \"t1\":" + String((boilerTemp1), 1) + 
             ", \"t2\":" + String((boilerTemp2), 1)  +
+            ", \"PIDsp\":" + String((PIDsetpoint), 1)  +
+            ", \"PIDout\":" + String((PIDoutput/40), 1)  +
             ", \"brewCD\":" + String((brewCountDown/1000.0), 1)  +
+    
             "}");
 }
  
@@ -265,7 +337,7 @@ boolean newSerialData = false;
 void readFromSerial(){
   recvWithStartEndMarkers();
   if (newSerialData == true) {
-    strcpy(tempChars, receivedChars);
+    strcpy(tempChars, receivedChars); //copy to temp attribute as 
     parseData();
     newSerialData = false;
   }
@@ -303,12 +375,6 @@ void recvWithStartEndMarkers() {
 }
 
 void parseData() {      // split the data into its parts
-  Serial.println(receivedChars);
-  Serial.println(receivedChars);
-  Serial.println(receivedChars);
-  Serial.println(receivedChars);
-  Serial.println(receivedChars);
-
   char * strtokIndx; // this is used by strtok() as an index
 
   char operation[numChars] = {0};
@@ -317,41 +383,74 @@ void parseData() {      // split the data into its parts
   
   strtokIndx = strtok(tempChars,":");      // get the first part - the string
   strcpy(operation, strtokIndx); // copy it to messageFromPC
-  Serial.println(operation);
-  Serial.println(operation);
-//  Serial.println(typeid(operation).name());
   
-
   
   strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
 //  integerFromPC = atoi(strtokIndx);     // convert this part to an integer
   strcpy(attribute, strtokIndx);
-  Serial.println(attribute);
-  Serial.println(attribute);
-  Serial.println(attribute);
   
   if (strcmp(operation, "s") == 0) {//scale
     if(strcmp(attribute, "t") == 0){
       Serial.println("execute tare");
       tareScale("serial");
     }
-  }else if(strcmp(operation, "t") == 0){//timer
+  }
+  else if(strcmp(operation, "t") == 0){//timer
     if(strcmp(attribute, "s") == 0){
       Serial.println("start timer");
       startTimer();
     }else if(strcmp(attribute, "p") == 0){
-      Serial.println("stop timer");
+      Serial.println("pause timer");
       stopTimer();
     }else if(strcmp(attribute,"r") == 0){
       Serial.println("reset timer");
       resetTimer();
     }
-  }else if(strcmp(operation, "bt") == 0){//brew
+  }
+  else if(strcmp(operation, "bt") == 0){//brew by time
     Serial.print("brew for: ");
     Serial.println(attribute);
     int brewFor = atoi(attribute);
-    Serial.println(brewFor);
-    brewByTime(atoi(attribute));
+    brewByTime(brewFor);  
+  }
+  else if(strcmp(operation, "b2") == 0){//brew by weight
+    Serial.print("brew target weight: ");
+    Serial.println(attribute);
+    int weight = atoi(attribute);
+    brewByWeight(weight);  
+  }
+  else if(strcmp(operation, "PIDcSP") == 0){//change PID SetPoint
+    PIDsetpoint = atof(attribute);
+    Serial.print("PID new SetPoint: ");
+    Serial.println(PIDsetpoint);
+  }
+  else if(strcmp(operation, "PIDcP") == 0){//change PID P value
+    Kp = atof(attribute);
+    Serial.print("PID new P: ");
+    Serial.println(Kp);
+  }
+  else if(strcmp(operation, "PIDcI") == 0){//change PID I value
+    Ki = atof(attribute);
+    Serial.print("PID new I: ");
+    Serial.println(Kp);
+  }
+  else if(strcmp(operation, "PIDcD") == 0){//change PID D value
+    Kd = atof(attribute);
+    Serial.print("PID new D: ");
+    Serial.println(Kp);
+  }else if(strcmp(operation, "runPump") == 0){//test pump ssr for 0.5s
+    Serial.println("runPump: 0.5s");
+    digitalWrite(pumpSSR, HIGH);
+    delay(500);
+    digitalWrite(pumpSSR, LOW);
+    Serial.println("finished pump");
+    
+  }else if(strcmp(operation, "runValve") == 0){//test valve ssr for 0.5s
+    Serial.println("runValve: 0.5s");
+    digitalWrite(solenoidSSR, HIGH);
+    delay(500);
+    digitalWrite(solenoidSSR, LOW);
+    Serial.println("finished solenoid");
   }
 }
 
@@ -377,11 +476,14 @@ void checkForBrewing(){
         digitalWrite(pumpSSR, HIGH);
         digitalWrite(solenoidSSR, HIGH);
         brewCountDown = brewStartTime + brewTarget*1000 - loopTime;
+        shotTime = brewCountDown;
+        
       }else{
         digitalWrite(pumpSSR, LOW);
         digitalWrite(solenoidSSR, LOW);
         brewing = false;
         brewCountDown = 0;
+        shotTime = brewCountDown;
       }
     }else if(brewMode == 'w'){ //brew by weight
       

@@ -5,9 +5,114 @@
 // selectively enable features needed in the rendering
 // process.
 
-
+// const Readline = serialPort.parsers.Readline;
+const { ReadlineParser } = require('@serialport/parser-readline')        
 const { SerialPort } = require('serialport')
-const tableify = require('tableify')
+// const tableify = require('tableify')
+
+
+// var portPath = '/dev/tty.usbmodem101457901'; //MBP
+var portPath = '/dev/ttyACM0'; //Pi
+
+//initialize serialport with 9600 baudrate.
+// var sp = new SerialPort('/dev/tty.usbmodem142301', {
+var sp = new SerialPort({path: portPath, // MBP
+// var sp = new SerialPort({path: '/dev/ttyACM0', //pi
+    baudRate: 115200,
+    autoOpen: true,
+},function (err) {
+    if (err) {
+        return console.log('Error: ', err.message)
+    }
+});
+
+
+
+//parse incoming data line-by-line from serial port.
+// const parser = sp.pipe(new Readline({ delimiter: '\r\n' }));
+const parser = sp.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+parser.on('data', processSerialData);
+
+sp.on('error', function(err) {
+    console.log('Error: ', err.message)
+})
+
+//append incoming data to the textarea.
+function processSerialData(event) {
+    if (event.startsWith("{")){
+        document.getElementById("serialJSON").value = event;
+        const data = JSON.parse(event);
+        console.log(data);
+        document.getElementById("grams").innerHTML = data.g + "gram";
+        document.getElementById("seconds").innerHTML = data.s + "s";
+        document.getElementById("temp").innerHTML = data.t + "\u00B0C";
+    }else{
+        document.getElementById("incomingData").value += "\n"+event;
+    }
+}
+
+function writeonSer(data){
+    //Write the data to serial port.
+    sp.write( data, function(err) {
+        if (err) {
+            return console.log('Error on write: ', err.message);
+        }
+        console.log('message written');
+    });
+
+}
+
+document.getElementById('inputText').onkeypress = function(e){
+    if (!e) e = window.event;
+    var keyCode = e.keyCode || e.which;
+    //write the data to serial when enter key is pressed.
+    if (keyCode == '13'){
+        //console.log("enter pressed", document.getElementById("inputText").value);
+        writeonSer(document.getElementById("inputText").value+"\r\n");
+        document.getElementById('inputText').value = "";
+        return false;
+    }
+}
+document.getElementById('tare').onclick = function(e){
+    //send ctrl+c to serialport
+    writeonSer('<s:t>');
+}
+document.getElementById('start').onclick = function(e){
+    //send ctrl+c to serialport
+    writeonSer('<t:s>');
+}
+document.getElementById('stop').onclick = function(e){
+    //send ctrl+c to serialport
+    writeonSer('<t:p>');
+}
+document.getElementById('reset').onclick = function(e){
+    //send ctrl+c to serialport
+    writeonSer('<t:r>');
+}
+document.getElementById('brew10').onclick = function(e){
+  writeonSer('<bt:10>');
+}
+document.getElementById('brew25').onclick = function(e){
+  writeonSer('<bt:25>');
+}
+document.getElementById('brew26').onclick = function(e){
+  writeonSer('<bt:26>');
+}
+document.getElementById('brew27').onclick = function(e){
+  writeonSer('<bt:27>');
+}
+document.getElementById('brew28').onclick = function(e){
+  writeonSer('<bt:28>');
+}
+document.getElementById('brew29').onclick = function(e){
+  writeonSer('<bt:29>');
+}
+document.getElementById('brew30').onclick = function(e){
+  writeonSer('<bt:30>');
+}
+
+
+
 
 async function listSerialPorts() {
   await SerialPort.list().then((ports, err) => {
@@ -28,12 +133,13 @@ async function listSerialPorts() {
     for (i = 0; i < ports.length; i++){
         let btn = document.createElement("button");
 
-        let path = ports[i].path
+        var path = ports[i].path
         btn.name = path;
         btn.innerHTML = path;
+        portPath = path;
         btn.onclick = function () {
             console.log(path);
-            var sp = new SerialPort(path, { //pi
+            sp = new SerialPort({path:path, //pi
                 baudRate: 115200,
                 autoOpen: true,
             },function (err) {
@@ -42,6 +148,7 @@ async function listSerialPorts() {
                 }
             });
             alert("opening port");
+
         };
         document.getElementById('ports').appendChild(btn);
     }
@@ -55,8 +162,22 @@ function listPorts() {
   setTimeout(listPorts, 2000);
 }
 
+function reOpenPort() {
+  if (!sp.isOpen){
+    console.log('serial port is closed, attempting to reopen');
+    sp.open(function (err) {
+      if (err) {
+        return console.log('Error opening port: ', err.message)
+      }
+    })
+  }
+  setTimeout(reOpenPort, 2000);
+}
+
 // Set a timeout that will check for new serialPorts every 2 seconds.
 // This timeout reschedules itself.
 setTimeout(listPorts, 2000);
+
+setTimeout(reOpenPort, 2000);
 
 listSerialPorts()

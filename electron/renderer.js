@@ -157,7 +157,7 @@ document.getElementById('temp-down').onclick = function(e){
 
 const { exec } = require("child_process");
 
-document.getElementById('reboot').onclick = function(e){
+document.getElementById('reboot').ondblclick = function(e){
   exec('reboot');
 }
 

@@ -48,6 +48,8 @@ sp.on('error', function(err) {
 })
 
 let PIDsp = 0.0;
+let gram = 0.0;
+let seconds = 0.0;
 
 //append incoming data to the textarea.
 function processSerialData(event) {
@@ -60,6 +62,8 @@ function processSerialData(event) {
         document.getElementById("temp").innerHTML = data.t + "\u00B0C";
         document.getElementById("setpoint").innerHTML = data.PIDsp + "\u00B0C";
         PIDsp = data.PIDsp;
+        gram = data.g;
+        seconds = data.s;
     }else{
         document.getElementById("incomingData").value += "\n"+event;
     }
@@ -76,6 +80,16 @@ function writeonSer(data){
 
 }
 
+function tare(){
+  writeonSer('<s:t>');
+}
+
+function autoTare(){
+  if (seconds < 10){
+    tare();
+  }
+}
+
 document.getElementById('inputText').onkeypress = function(e){
     if (!e) e = window.event;
     var keyCode = e.keyCode || e.which;
@@ -89,7 +103,7 @@ document.getElementById('inputText').onkeypress = function(e){
 }
 document.getElementById('tare').onclick = function(e){
     //send ctrl+c to serialport
-    writeonSer('<s:t>');
+    tare();
 }
 document.getElementById('start').onclick = function(e){
     //send ctrl+c to serialport
@@ -104,24 +118,31 @@ document.getElementById('reset').onclick = function(e){
     writeonSer('<t:r>');
 }
 document.getElementById('brew10').onclick = function(e){
+  autoTare();
   writeonSer('<bt:10>');
 }
 document.getElementById('brew25').onclick = function(e){
+  autoTare();
   writeonSer('<bt:25>');
 }
 document.getElementById('brew26').onclick = function(e){
+  autoTare();
   writeonSer('<bt:26>');
 }
 document.getElementById('brew27').onclick = function(e){
+  autoTare();
   writeonSer('<bt:27>');
 }
 document.getElementById('brew28').onclick = function(e){
+  autoTare();
   writeonSer('<bt:28>');
 }
 document.getElementById('brew29').onclick = function(e){
+  autoTare();
   writeonSer('<bt:29>');
 }
 document.getElementById('brew30').onclick = function(e){
+  autoTare();
   writeonSer('<bt:30>');
 }
 document.getElementById('brewStop').onclick = function(e){

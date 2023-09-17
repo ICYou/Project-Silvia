@@ -145,7 +145,6 @@ void setup() {
   Serial.println();
   Serial.println("Starting...");
   
-  pinMode(4, OUTPUT); 
   pinMode(pumpSSR, OUTPUT);
   pinMode(solenoidSSR, OUTPUT);
   pinMode(boilerSSR, OUTPUT);
@@ -453,6 +452,7 @@ void parseData() {      // split the data into its parts
   }else if(strcmp(operation, "runValve") == 0){//test valve ssr for 0.5s
     Serial.println("runValve: 0.5s");
     digitalWrite(solenoidSSR, HIGH);
+    Serial.println("running solenoid");
     delay(500);
     digitalWrite(solenoidSSR, LOW);
     Serial.println("finished solenoid");

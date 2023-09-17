@@ -47,6 +47,8 @@ sp.on('error', function(err) {
     console.log('Error: ', err.message)
 })
 
+let PIDsp = 0.0;
+
 //append incoming data to the textarea.
 function processSerialData(event) {
     if (event.startsWith("{")){
@@ -57,6 +59,7 @@ function processSerialData(event) {
         document.getElementById("seconds").innerHTML = data.s + "s";
         document.getElementById("temp").innerHTML = data.t + "\u00B0C";
         document.getElementById("setpoint").innerHTML = data.PIDsp + "\u00B0C";
+        PIDsp = data.PIDsp;
     }else{
         document.getElementById("incomingData").value += "\n"+event;
     }
@@ -143,6 +146,14 @@ document.getElementById('sp120').onclick = function(e){
   writeonSer('<PIDcSP:120>');
 }
 
+document.getElementById('temp-up').onclick = function(e){
+  console.log(PIDsp + 1)
+  writeonSer(`<PIDcSP:${PIDsp + 1}>`);
+}
+document.getElementById('temp-down').onclick = function(e){
+  console.log(PIDsp - 1)
+  writeonSer(`<PIDcSP:${PIDsp - 1}>`);
+}
 
 
 

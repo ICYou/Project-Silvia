@@ -155,6 +155,11 @@ document.getElementById('temp-down').onclick = function(e){
   writeonSer(`<PIDcSP:${PIDsp - 1}>`);
 }
 
+const { exec } = require("child_process");
+
+document.getElementById('reboot').onclick = function(e){
+  exec('reboot');
+}
 
 
 async function listSerialPorts() {

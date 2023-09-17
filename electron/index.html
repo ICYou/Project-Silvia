@@ -1,147 +1,148 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="./src/contents/bootstrap-5.1.3/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="./src/contents/bootstrap-5.1.3/css/bootstrap-grid.min.css" />
-    <link rel="stylesheet" href="styles.css">
-    <!-- <script src="./src/contents/bootstrap-5.1.3/js/bootstrap.bundle.min.js"></script> -->
-
-    <!-- Bootstrap Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <!-- <script>require('jquery');</script> -->
-    <script>require('popper.js');</script>
-    <script>require('bootstrap');</script>
-
-
-    <!-- <script src="./contents/jquery/3.3.1/jquery-3.3.1.min.js"></script> -->
-<!-- <script src="./contents/popper.js/1.14.3/popper.min.js"></script> -->
-    <script src="./src/contents/bootstrap-5.1.3/js/bootstrap.min.js"></script>
-    <script src="./src/contents/bootstrap-5.1.3/js/bootstrap.bundle.min.js"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Silvia</title>
-  </head>
-  <body>
-    <div class="container-fluid">
+<head>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="./src/contents/bootstrap-5.1.3/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./src/contents/bootstrap-5.1.3/css/bootstrap-grid.min.css" />
+  <link rel="stylesheet" href="styles.css">
+  <!-- <script src="./src/contents/bootstrap-5.1.3/js/bootstrap.bundle.min.js"></script> -->
+  
+  <!-- Bootstrap Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <!-- <script>require('jquery');</script> -->
+  <script>require('popper.js');</script>
+  <script>require('bootstrap');</script>
+  
+  
+  <!-- <script src="./contents/jquery/3.3.1/jquery-3.3.1.min.js"></script> -->
+  <!-- <script src="./contents/popper.js/1.14.3/popper.min.js"></script> -->
+  <script src="./src/contents/bootstrap-5.1.3/js/bootstrap.min.js"></script>
+  <script src="./src/contents/bootstrap-5.1.3/js/bootstrap.bundle.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Silvia</title>
+</head>
+<body>
+  <div class="container-fluid">
     <div class="row">
-        <div class="col-8">
-            <div class="row">
-            <div class="col-6">
-                <div class="card">
-                    <div class="card-body">
-                      <h4 class="card-title" id="grams">0gram</h4>
-                      <input class="btn btn-primary btn-small btn-round float-end" id="tare" type="submit" name="tare-button" value="tare"/>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                      <h4 class="card-title" id="seconds">0s</h4>
-                    </div>
-                </div>
-            </div>
-    
-            <div class="col-6">
-                <div class="card">
-                    <div class="card-body" data-toggle="collapse" data-target="#setSP" aria-expanded="false" aria-controls="setSP">
-                        <h4 class="card-title" id="temp">0<span>&#176;</span>C</h4>
-                        <h4 class="card-title float-end" id="setpoint">0<span>&#176;</span>C</h4>
-                    </div>
-                    <div class="card-body collapse" id="setSP">
-                        <div class="mb-2 btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-                            <div class="btn-group me-2" role="group" aria-label="First group">
-                                <button type="button" id="temp-up" class="btn btn-primary">▲</button>
-                                <button type="button" id="temp-down" class="btn btn-primary">▼</button>
-                            </div>
-                        </div>
-                        <div>
-                            <input class="btn btn-warning btn-medium btn-round" id="sp20" type="submit" name="sp20" value="sp20"/>
-                            <input class="btn btn-primary btn-round btn-medium" id="sp85" type="submit" name="sp85" value="sp85"/>
-                            <input class="btn btn-primary btn-round btn-medium" id="sp90" type="submit" name="sp90" value="sp90"/>
-                            <input class="btn btn-primary btn-round btn-medium" id="sp95" type="submit" name="sp95" value="sp95"/>
-                            <input class="btn btn-danger btn-round btn-medium" id="sp110" type="submit" name="sp110" value="sp110"/>
-                            <input class="btn btn-danger btn-round btn-medium" id="sp120" type="submit" name="sp120" value="sp120"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-            <div class="row">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>BREW</h5>
-                        <input class="btn btn-danger btn-round btn-small" id="brew10" type="submit" name="brew10" value="10s"/>
-                        <input class="btn btn-primary btn-round btn-small" id="brew25" type="submit" name="brew25" value="25s"/>
-                        <input class="btn btn-secondary btn-round btn-small" id="brew26" type="submit" name="brew26" value="26s"/>
-                        <input class="btn btn-secondary btn-round btn-small" id="brew27" type="submit" name="brew27" value="27s"/>
-                        <input class="btn btn-secondary btn-round btn-small" id="brew28" type="submit" name="brew28" value="28s"/>
-                        <input class="btn btn-secondary btn-round btn-small" id="brew29" type="submit" name="brew29" value="29s"/>
-                        <input class="btn btn-primary btn-round btn-small" id="brew30" type="submit" name="brew30" value="30s"/>
-                        <input class="btn btn-danger btn-round float-end" id="brewStop" type="submit" name="brewStop" value="STOP"/>
-
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        
-        <div class="col-4">
+      <div class="col-8">
+        <div class="row">
+          <div class="col-6">
             <div class="card">
-            <div class="card-body">
-              <input class="btn btn-success btn-round btn-small" id="start" type="submit" name="stop" value="start"/>
-              <input class="btn btn-warning btn-round btn-small" id="stop" type="submit" name="stop" value="stop"/>
-              <input class="btn btn-secondary btn-round btn-small" id="reset" type="submit" name="reset" value="reset"/>
+              <div class="card-body">
+                <h4 class="card-title" id="grams">0gram</h4>
+                <input class="btn btn-primary btn-small btn-round float-end" id="tare" type="submit" name="tare-button" value="tare"/>
+              </div>
             </div>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title" id="seconds">0s</h4>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-6">
+            <div class="card">
+              <div class="card-body" data-toggle="collapse" data-target="#setSP" aria-expanded="false" aria-controls="setSP">
+                <h4 class="card-title" id="temp">0<span>&#176;</span>C</h4>
+                <h4 class="card-title float-end" id="setpoint">0<span>&#176;</span>C</h4>
+              </div>
+              <div class="card-body collapse" id="setSP">
+                <div class="mb-2 btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+                  <div class="btn-group me-2" role="group" aria-label="First group">
+                    <button type="button" id="temp-up" class="btn btn-primary">▲</button>
+                    <button type="button" id="temp-down" class="btn btn-primary">▼</button>
+                  </div>
+                </div>
+                <div>
+                  <input class="btn btn-warning btn-medium btn-round" id="sp20" type="submit" name="sp20" value="sp20"/>
+                  <input class="btn btn-primary btn-round btn-medium" id="sp85" type="submit" name="sp85" value="sp85"/>
+                  <input class="btn btn-primary btn-round btn-medium" id="sp90" type="submit" name="sp90" value="sp90"/>
+                  <input class="btn btn-primary btn-round btn-medium" id="sp95" type="submit" name="sp95" value="sp95"/>
+                  <input class="btn btn-danger btn-round btn-medium" id="sp110" type="submit" name="sp110" value="sp110"/>
+                  <input class="btn btn-danger btn-round btn-medium" id="sp120" type="submit" name="sp120" value="sp120"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      
+      <div class="col-4">
         <div class="card">
-            <div class="card-body">
-              <div>
+          <div class="card-body">
+            <input class="btn btn-success btn-round btn-small" id="start" type="submit" name="stop" value="start"/>
+            <input class="btn btn-warning btn-round btn-small" id="stop" type="submit" name="stop" value="stop"/>
+            <input class="btn btn-secondary btn-round btn-small" id="reset" type="submit" name="reset" value="reset"/>
+          </div>
+        </div>
+      </div>
+        
+        <div class="row">
+          <div class="col-10">
+            <div class="card">
+              <div class="card-body">
+                <h5>BREW</h5>
+                <input class="btn btn-danger btn-round btn-small" id="brew10" type="submit" name="brew10" value="10s"/>
+                <input class="btn btn-primary btn-round btn-small" id="brew25" type="submit" name="brew25" value="25s"/>
+                <input class="btn btn-secondary btn-round btn-small" id="brew26" type="submit" name="brew26" value="26s"/>
+                <input class="btn btn-secondary btn-round btn-small" id="brew27" type="submit" name="brew27" value="27s"/>
+                <input class="btn btn-secondary btn-round btn-small" id="brew28" type="submit" name="brew28" value="28s"/>
+                <input class="btn btn-secondary btn-round btn-small" id="brew29" type="submit" name="brew29" value="29s"/>
+                <input class="btn btn-primary btn-round btn-small" id="brew30" type="submit" name="brew30" value="30s"/>
+                <input class="btn btn-danger btn-round ms-3" id="brewStop" type="submit" name="brewStop" value="STOP"/>
                 
+              </div>
             </div>
+          </div>
+          <div class="col-2">
+            <div class="card card-body">
+              <input class="btn btn-danger btn-round float-end" id="reboot" type="submit" name="REBOOT" value="REBOOT"/>
             </div>
+          </div>
         </div>
-
+      </div>
+      
+      
+      <div class="col-4">
+        <textarea rows="3" cols="75" id="serialJSON"></textarea>
+        
+        <br>
+        
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#serialOutput" aria-expanded="false" aria-controls="serialOutput">
+          Show Serial data
+        </button>
+      </div>
+      
+      <div class="col-12 collapse" id="serialOutput">
+        <div class="col-12">
+          <div>Error and ports:</div>
+          <div id="error"></div>
+          <div id="ports"></div>
         </div>
-        <div class="col-4">
-            <textarea rows="3" cols="75" id="serialJSON"></textarea>
-
-            <br>
-
-            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#serialOutput" aria-expanded="false" aria-controls="serialOutput">
-                Show Serial data
-            </button>
-        </div>
-
-        <div class="col-12 collapse" id="serialOutput">
-            <div class="col-12">
-                <div>Error and ports:</div>
-                <div id="error"></div>
-                <div id="ports"></div>
-            </div>
-            <div class="col-12">
-                <div class="card card-body"></div>
-                <h1>Serial terminal</h1>
-                <textarea rows="30" cols="30" id="incomingData"></textarea>
-                </br>
-                <textarea rows="1" cols="50" id="inputText"></textarea>
-                </br>
-            </div>
-        </div>
-        </div>
+        <div class="col-12">
+          <div class="card card-body"></div>
+          <h1>Serial terminal</h1>
+          <textarea rows="30" cols="30" id="incomingData"></textarea>
+        </br>
+        <textarea rows="1" cols="50" id="inputText"></textarea>
+      </br>
     </div>
-    </div>
-    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
 
 
 
-    <script>
-
-    </script>
-    <script>
-        // You can also require other files to run in this process
-        require('./renderer.js')
-    </script>
-  </body>
+<script>
+  
+</script>
+<script>
+  // You can also require other files to run in this process
+  require('./renderer.js')
+</script>
+</body>
 </html>

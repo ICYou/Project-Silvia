@@ -160,11 +160,23 @@ document.getElementById('sp90').onclick = function(e){
 document.getElementById('sp95').onclick = function(e){
   writeonSer('<PIDcSP:95>');
 }
+document.getElementById('sp98').onclick = function(e){
+  writeonSer('<PIDcSP:98>');
+}
 document.getElementById('sp110').onclick = function(e){
   writeonSer('<PIDcSP:110>');
 }
 document.getElementById('sp120').onclick = function(e){
   writeonSer('<PIDcSP:120>');
+}
+document.getElementById('sp130').onclick = function(e){
+  writeonSer('<PIDcSP:130>');
+}
+document.getElementById('sp135').onclick = function(e){
+  writeonSer('<PIDcSP:135>');
+}
+document.getElementById('sp140').onclick = function(e){
+  writeonSer('<PIDcSP:140>');
 }
 
 document.getElementById('temp-up').onclick = function(e){
